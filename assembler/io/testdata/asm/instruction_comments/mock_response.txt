@@ -1,0 +1,27 @@
+   @0 // an A instruction comment
+   D=M // A C instruction comment
+   @INFINITE_LOOP
+   D;JLE 
+   @counter
+   M=D
+   @SCREEN
+   D=A //instruction comment
+   @address //other instruction comment
+   M=D
+(LOOP) // label comment but close enough
+   @address
+   A=M
+   M=-1
+   @address
+   D=M
+   @32
+   D=D+A
+   @address
+   M=D
+   @counter
+   MD=M-1
+   @LOOP
+   D;JGT
+(INFINITE_LOOP)
+   @INFINITE_LOOP
+   0;JMP

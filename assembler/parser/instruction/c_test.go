@@ -13,7 +13,7 @@ const (
 )
 
 func Test_NewC_Should_Raise_Error_When_Destination_Invalid(t *testing.T) {
-	expected := "Can not create C instruction with unknown destination: [invalid]"
+	expected := "Can not create C instruction with unknown destination: [invalid] "
 
 	actual, err := instruction.NewC(invalid, "M-1", "JGT")
 
@@ -22,7 +22,7 @@ func Test_NewC_Should_Raise_Error_When_Destination_Invalid(t *testing.T) {
 }
 
 func Test_NewC_Should_Raise_Error_When_Computation_Invalid(t *testing.T) {
-	expected := "Can not create C instruction with unknown computation: [invalid]"
+	expected := "Can not create C instruction with unknown computation: [invalid] "
 
 	actual, err := instruction.NewC("D", invalid, "JGT")
 
@@ -31,7 +31,7 @@ func Test_NewC_Should_Raise_Error_When_Computation_Invalid(t *testing.T) {
 }
 
 func Test_NewC_Should_Raise_Error_When_Jump_Invalid(t *testing.T) {
-	expected := "Can not create C instruction with unknown jump: [invalid]"
+	expected := "Can not create C instruction with unknown jump: [invalid] "
 
 	actual, err := instruction.NewC("D", "M-1", invalid)
 

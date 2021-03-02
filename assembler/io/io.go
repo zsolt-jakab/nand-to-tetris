@@ -10,7 +10,7 @@ const (
 )
 
 /*
-FileAccessor is an interface for reading code lines of the hack assemly file and creating new hack binary files
+FileAccessor is an interface for reading code lines of the hack assembly file and creating new hack binary files
 */
 type FileAccessor interface {
 	ReadCodeLines(name string) ([]string, []int)
@@ -72,7 +72,7 @@ func getInstructionPart(line string) string {
 }
 
 func stripComment(line string) string {
-	return strings.Split(line, startOfcomment)[0]
+	return strings.Split(line, startOfComment)[0]
 }
 
 func join(lines []string) string {

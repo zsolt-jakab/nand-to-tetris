@@ -15,7 +15,6 @@ const (
 	testFileName         = "testdata/test"
 	testHackFileName     = testFileName + ".hack"
 	testAssemblyFileName = testFileName + ".asm"
-	newLine              = "\n"
 )
 
 type ReaderMock struct {
@@ -97,13 +96,13 @@ func Test_ReadCodeLines_When_Comment_Lines(t *testing.T) {
 
 func Test_ReadCodeLines_Panic_When_Read_Error(t *testing.T) {
 	readerMock := new(ReaderMock)
-	readerMock.On("Read", testAssemblyFileName).Return([]byte{}, fmt.Errorf("Error message"))
+	readerMock.On("Read", testAssemblyFileName).Return([]byte{}, fmt.Errorf("Error message "))
 
 	sut := aio.DefaultFileAccessor{readerMock, &aio.DefaultFileWriter{}}
 
 	action := func() { sut.ReadCodeLines(testFileName) }
 
-	assert.PanicsWithError(t, "Error message", action)
+	assert.PanicsWithError(t, "Error message ", action)
 }
 
 func Test_CreateHackFile(t *testing.T) {

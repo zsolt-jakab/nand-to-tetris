@@ -5,7 +5,7 @@ import (
 )
 
 const (
-	startOfcomment = "//"
+	startOfComment = "//"
 )
 
 /*

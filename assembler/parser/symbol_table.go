@@ -23,8 +23,8 @@ type SymbolTable struct {
 }
 
 /*
-NewSymbolTable creates a new SymbolTalbe with all of the
-pre defined symbols, labels and variables from the lines of the soruce code.
+NewSymbolTable creates a new SymbolTable with all of the
+pre defined symbols, labels and variables from the lines of the source code.
 */
 func NewSymbolTable(lines []string) *SymbolTable {
 	symbolTable := initializeSymbolTable()
@@ -46,7 +46,7 @@ func (symbolTable *SymbolTable) GetAddress(symbol string) (int, error) {
 	} else if address, isPresent := symbolTable.symbols[symbol]; isPresent {
 		return address, nil
 	}
-	return 0, fmt.Errorf("Can not find symbol in symbol table : : [%s]", symbol)
+	return 0, fmt.Errorf("Can not find symbol in symbol table : : [%s] ", symbol)
 }
 
 func initializeSymbolTable() *SymbolTable {

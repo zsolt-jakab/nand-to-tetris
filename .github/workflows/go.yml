@@ -22,7 +22,8 @@ jobs:
       run: |
         pwd
         ls -la
-        cd ~/go
+        cd assembler
+        ls -la
         go build -v ./...
 
     - name: Test

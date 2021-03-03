@@ -27,4 +27,9 @@ jobs:
         go build -v ./...
 
     - name: Test
-      run: go test -v --tags=integration ./...
+      run: |
+        pwd
+        ls -la
+        cd assembler
+        ls -la
+        go test -v --tags=integration ./...

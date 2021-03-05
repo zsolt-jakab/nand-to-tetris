@@ -20,16 +20,10 @@ jobs:
 
     - name: Build
       run: |
-        pwd
-        ls -la
         cd assembler
-        ls -la
         go build -v ./...
 
     - name: Test
       run: |
-        pwd
-        ls -la
         cd assembler
-        ls -la
         go test -v --tags=integration ./...

@@ -18,12 +18,23 @@ jobs:
       with:
         go-version: 1.14
 
-    - name: Build
+    - name: Build assembler
       run: |
         cd assembler
         go build -v ./...
+        
+    - name: Build vm-translator
+      run: |
+        cd vm-translator
+        go build -v ./...
 
-    - name: Test
+    - name: Test assembler
       run: |
         cd assembler
         go test -v --tags=integration ./...
+        
+    - name: Test
+      run: |
+        cd vm-translator
+        go test -v --tags=integration ./...
+        

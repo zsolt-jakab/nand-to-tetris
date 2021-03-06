@@ -5,6 +5,7 @@
 *.so
 *.dylib
 assembler/assembler
+vm-translator/vm-translator
 # Test binary, built with `go test -c`
 *.test
 

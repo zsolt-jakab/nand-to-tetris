@@ -25,7 +25,6 @@ jobs:
         
     - name: Build vm-translator
       run: |
-        pwd
         cd vm-translator
         go build -v ./...
 

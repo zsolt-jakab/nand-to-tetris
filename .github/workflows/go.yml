@@ -33,7 +33,7 @@ jobs:
         cd assembler
         go test -v --tags=integration ./...
         
-    - name: Test
+    - name: Test vm-translator
       run: |
         cd vm-translator
         go test -v --tags=integration ./...

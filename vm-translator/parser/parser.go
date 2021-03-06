@@ -8,7 +8,7 @@ import (
 )
 
 /*
-Command interface has one function, the Assembly() function
+Command interface has one function, the Translate() function
 It should return the assembly representation of the command
 */
 type Command interface {

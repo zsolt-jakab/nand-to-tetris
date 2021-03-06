@@ -12,7 +12,7 @@ const (
 )
 
 func Test_NewC_Should_Raise_Error_When_Address_Negative(t *testing.T) {
-	expected := "Can not create A instruction with negative address value: [-1]"
+	expected := "Can not create A instruction with negative address value: [-1] "
 
 	actual, err := instruction.NewA(-1)
 
@@ -21,7 +21,7 @@ func Test_NewC_Should_Raise_Error_When_Address_Negative(t *testing.T) {
 }
 
 func Test_NewC_Should_Raise_Error_When_Address_Bigger_Than_Limit(t *testing.T) {
-	expected := "Can not create A instruction with bigger than 32767 address value: [32768]"
+	expected := "Can not create A instruction with bigger than 32767 address value: [32768] "
 
 	actual, err := instruction.NewA(lastValidAddress + 1)
 

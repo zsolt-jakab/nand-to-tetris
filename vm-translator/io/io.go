@@ -5,34 +5,35 @@ import (
 )
 
 const (
-	hackFileExtension = ".hack"
-	newLine           = "\n"
+	asmFileExtension = ".asm"
+	vmFileExtension  = ".vm"
+	newLine          = "\n"
 )
 
 /*
-FileAccessor is an interface for reading code lines of the hack assembly file and creating new hack binary files
+FileAccessor is an interface for reading code lines of a source file and creating new files with translated content
 */
 type FileAccessor interface {
-	ReadCodeLines(name string) ([]string, []int)
-	CreateHackFile(name string, lines []string)
+	ReadSourceLines(name string) ([]string, []int)
+	CreateTargetFile(name string, lines []string)
 }
 
 /*
-DefaultFileAccessor is the base implementation of FileAccessor
+VMTranslatorFileAccessor is the base implementation of FileAccessor
 */
-type DefaultFileAccessor struct {
+type VMTranslatorFileAccessor struct {
 	FileReader
 	FileWriter
 }
 
 /*
-ReadCodeLines reads the code lines from a Hack assembly(asm) file into a string array.
+ReadSourceLines reads the code lines from a .vm file into a string array.
 It will ignore all of the empty lines and the comments.
 It will give back the line numbers in the files in an int array, what will help the parser to locate the error,
-if a there is an invalid assembly code which can not be translated to binary.
+if a there is an invalid code which can not be translated.
 */
-func (sr *DefaultFileAccessor) ReadCodeLines(name string) ([]string, []int) {
-	bytes, err := sr.Read(name + ".asm")
+func (sr *VMTranslatorFileAccessor) ReadSourceLines(name string) ([]string, []int) {
+	bytes, err := sr.Read(name + vmFileExtension)
 	panicIfError(err)
 	lines := strings.Split(string(bytes), newLine)
 
@@ -40,12 +41,11 @@ func (sr *DefaultFileAccessor) ReadCodeLines(name string) ([]string, []int) {
 }
 
 /*
-CreateHackFile creates a file with the given lines and .hack extension
-Lines should contain binary code what can run in the hack computer.
+CreateTargetFile creates a file with the given lines and .vm extension
 */
-func (sr *DefaultFileAccessor) CreateHackFile(name string, lines []string) {
+func (sr *VMTranslatorFileAccessor) CreateTargetFile(name string, lines []string) {
 	joinedLines := join(lines)
-	err := sr.Write(name+hackFileExtension, []byte(joinedLines))
+	err := sr.Write(name+asmFileExtension, []byte(joinedLines))
 
 	panicIfError(err)
 }

@@ -22,7 +22,7 @@ type DefaultFileReader struct {
 }
 
 /*
-Read uses inside the ioutil.ReadFile function to read files
+Read uses inside the ioutil. ReadFile function to read files
 */
 func (sc *DefaultFileReader) Read(fileName string) ([]byte, error) {
 	return ioutil.ReadFile(fileName)

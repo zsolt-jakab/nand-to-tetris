@@ -64,7 +64,7 @@ var destMap = map[string]string{
 }
 
 /*
-A C instruction contains a destination a computaion and a jump part
+A C instruction contains a destination a computation and a jump part
 They are stored as they are digested, in a human readable form
 */
 type C struct {
@@ -83,11 +83,11 @@ comp represents the computation and it is mandatory
 */
 func NewC(dest, comp, jump string) (*C, error) {
 	if _, existsDest := destMap[dest]; !existsDest {
-		return nil, fmt.Errorf("Can not create C instruction with unknown destination: [%s]", dest)
+		return nil, fmt.Errorf("Can not create C instruction with unknown destination: [%s] ", dest)
 	} else if _, existsComp := compMap[comp]; !existsComp {
-		return nil, fmt.Errorf("Can not create C instruction with unknown computation: [%s]", comp)
-	} else if _, eexistsJump := jumpMap[jump]; !eexistsJump {
-		return nil, fmt.Errorf("Can not create C instruction with unknown jump: [%s]", jump)
+		return nil, fmt.Errorf("Can not create C instruction with unknown computation: [%s] " , comp)
+	} else if _, existsJump := jumpMap[jump]; !existsJump {
+		return nil, fmt.Errorf("Can not create C instruction with unknown jump: [%s] ", jump)
 	}
 
 	binary := createBinary(comp, dest, jump)

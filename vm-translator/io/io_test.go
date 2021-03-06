@@ -8,13 +8,14 @@ import (
 
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/mock"
-	aio "github.com/zsolt-jakab/nand-to-tetris/assembler/io"
+	vmio "github.com/zsolt-jakab/nand-to-tetris/vm-translator/io"
 )
 
 const (
-	testFileName         = "testdata/test"
-	testHackFileName     = testFileName + ".hack"
-	testAssemblyFileName = testFileName + ".asm"
+	testFileName    = "testdata/test"
+	testAsmFileName = testFileName + ".asm"
+	testVmFileName  = testFileName + ".vm"
+	newLine         = "\n"
 )
 
 type ReaderMock struct {
@@ -39,12 +40,12 @@ func (wm *WriterMock) Write(name string, data []byte) error {
 
 func Test_ReadCodeLines(t *testing.T) {
 	expectedCodeLineIndexes := []int{1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20, 21, 22, 23, 24, 25, 26, 27}
-	expectedCodeLines := getFileContentAsLines("testdata/asm/simple/expected.txt")
-	readerMockResponse := getFileContent("testdata/asm/simple/mock_response.txt")
+	expectedCodeLines := getFileContentAsLines("testdata/vm/simple/expected.txt")
+	readerMockResponse := getFileContent("testdata/vm/simple/mock_response.txt")
 	readerMock := stubReader(readerMockResponse)
-	sut := aio.DefaultFileAccessor{readerMock, &aio.DefaultFileWriter{}}
+	sut := vmio.VMTranslatorFileAccessor{readerMock, &vmio.DefaultFileWriter{}}
 
-	actualCodeLines, actualCodeLineIndexes := sut.ReadCodeLines(testFileName)
+	actualCodeLines, actualCodeLineIndexes := sut.ReadSourceLines(testFileName)
 
 	assert.Equal(t, expectedCodeLines, actualCodeLines)
 	assert.Equal(t, expectedCodeLineIndexes, actualCodeLineIndexes)
@@ -53,13 +54,13 @@ func Test_ReadCodeLines(t *testing.T) {
 
 func Test_ReadCodeLines_When_Instruction_Comments(t *testing.T) {
 	expectedCodeLineIndexes := []int{1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20, 21, 22, 23, 24, 25, 26, 27}
-	expectedCodeLines := getFileContentAsLines("testdata/asm/instruction_comments/expected.txt")
-	readerMockResponse := getFileContent("testdata/asm/instruction_comments/mock_response.txt")
+	expectedCodeLines := getFileContentAsLines("testdata/vm/instruction_comments/expected.txt")
+	readerMockResponse := getFileContent("testdata/vm/instruction_comments/mock_response.txt")
 	readerMock := new(ReaderMock)
-	readerMock.On("Read", testAssemblyFileName).Return(readerMockResponse, nil)
-	sut := aio.DefaultFileAccessor{readerMock, &aio.DefaultFileWriter{}}
+	readerMock.On("Read", testVmFileName).Return(readerMockResponse, nil)
+	sut := vmio.VMTranslatorFileAccessor{readerMock, &vmio.DefaultFileWriter{}}
 
-	actualCodeLines, actualCodeLineIndexes := sut.ReadCodeLines(testFileName)
+	actualCodeLines, actualCodeLineIndexes := sut.ReadSourceLines(testFileName)
 
 	assert.Equal(t, expectedCodeLines, actualCodeLines)
 	assert.Equal(t, expectedCodeLineIndexes, actualCodeLineIndexes)
@@ -68,12 +69,12 @@ func Test_ReadCodeLines_When_Instruction_Comments(t *testing.T) {
 
 func Test_ReadCodeLines_When_Empty_Lines(t *testing.T) {
 	expectedCodeLineIndexes := []int{9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20, 21, 22, 24, 25, 30, 31, 32, 33, 34, 35, 36, 37, 38, 39, 40}
-	expectedCodeLines := getFileContentAsLines("testdata/asm/empty_lines/expected.txt")
-	readerMockResponse := getFileContent("testdata/asm/empty_lines/mock_response.txt")
+	expectedCodeLines := getFileContentAsLines("testdata/vm/empty_lines/expected.txt")
+	readerMockResponse := getFileContent("testdata/vm/empty_lines/mock_response.txt")
 	readerMock := stubReader(readerMockResponse)
-	sut := aio.DefaultFileAccessor{readerMock, &aio.DefaultFileWriter{}}
+	sut := vmio.VMTranslatorFileAccessor{readerMock, &vmio.DefaultFileWriter{}}
 
-	actualCodeLines, actualCodeLineIndexes := sut.ReadCodeLines(testFileName)
+	actualCodeLines, actualCodeLineIndexes := sut.ReadSourceLines(testFileName)
 
 	assert.Equal(t, expectedCodeLines, actualCodeLines)
 	assert.Equal(t, expectedCodeLineIndexes, actualCodeLineIndexes)
@@ -82,12 +83,12 @@ func Test_ReadCodeLines_When_Empty_Lines(t *testing.T) {
 
 func Test_ReadCodeLines_When_Comment_Lines(t *testing.T) {
 	expectedCodeLineIndexes := []int{9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20, 21, 22, 24, 25, 30, 31, 32, 33, 34, 35, 36, 37, 38, 39, 40}
-	expectedCodeLines := getFileContentAsLines("testdata/asm/comment_lines/expected.txt")
-	readerMockResponse := getFileContent("testdata/asm/comment_lines/mock_response.txt")
+	expectedCodeLines := getFileContentAsLines("testdata/vm/comment_lines/expected.txt")
+	readerMockResponse := getFileContent("testdata/vm/comment_lines/mock_response.txt")
 	readerMock := stubReader(readerMockResponse)
-	sut := aio.DefaultFileAccessor{readerMock, &aio.DefaultFileWriter{}}
+	sut := vmio.VMTranslatorFileAccessor{readerMock, &vmio.DefaultFileWriter{}}
 
-	actualCodeLines, actualCodeLineIndexes := sut.ReadCodeLines(testFileName)
+	actualCodeLines, actualCodeLineIndexes := sut.ReadSourceLines(testFileName)
 
 	assert.Equal(t, expectedCodeLines, actualCodeLines)
 	assert.Equal(t, expectedCodeLineIndexes, actualCodeLineIndexes)
@@ -96,33 +97,33 @@ func Test_ReadCodeLines_When_Comment_Lines(t *testing.T) {
 
 func Test_ReadCodeLines_Panic_When_Read_Error(t *testing.T) {
 	readerMock := new(ReaderMock)
-	readerMock.On("Read", testAssemblyFileName).Return([]byte{}, fmt.Errorf("Error message "))
+	readerMock.On("Read", testVmFileName).Return([]byte{}, fmt.Errorf("Error message"))
 
-	sut := aio.DefaultFileAccessor{readerMock, &aio.DefaultFileWriter{}}
+	sut := vmio.VMTranslatorFileAccessor{readerMock, &vmio.DefaultFileWriter{}}
 
-	action := func() { sut.ReadCodeLines(testFileName) }
+	action := func() { sut.ReadSourceLines(testFileName) }
 
-	assert.PanicsWithError(t, "Error message ", action)
+	assert.PanicsWithError(t, "Error message", action)
 }
 
 func Test_CreateHackFile(t *testing.T) {
 	writerMock := new(WriterMock)
-	writerMock.On("Write", testHackFileName, []byte("line 1\nline 2\nline 3\n")).Return(nil)
+	writerMock.On("Write", testAsmFileName, []byte("line 1\nline 2\nline 3\n")).Return(nil)
 	linesToSave := []string{"line 1", "line 2", "line 3"}
-	sut := aio.DefaultFileAccessor{&aio.DefaultFileReader{}, writerMock}
+	sut := vmio.VMTranslatorFileAccessor{&vmio.DefaultFileReader{}, writerMock}
 
-	sut.CreateHackFile(testFileName, linesToSave)
+	sut.CreateTargetFile(testFileName, linesToSave)
 
 	writerMock.AssertExpectations(t)
 }
 
 func Test_CreateHackFile_Panic_When_Write_Error(t *testing.T) {
 	writerMock := new(WriterMock)
-	writerMock.On("Write", testHackFileName, []byte("line 1\nline 2\nline 3\n")).Return(fmt.Errorf("Error message"))
+	writerMock.On("Write", testAsmFileName, []byte("line 1\nline 2\nline 3\n")).Return(fmt.Errorf("Error message"))
 	linesToSave := []string{"line 1", "line 2", "line 3"}
-	sut := aio.DefaultFileAccessor{&aio.DefaultFileReader{}, writerMock}
+	sut := vmio.VMTranslatorFileAccessor{&vmio.DefaultFileReader{}, writerMock}
 
-	action := func() { sut.CreateHackFile(testFileName, linesToSave) }
+	action := func() { sut.CreateTargetFile(testFileName, linesToSave) }
 
 	assert.PanicsWithError(t, "Error message", action)
 	writerMock.AssertExpectations(t)
@@ -130,7 +131,7 @@ func Test_CreateHackFile_Panic_When_Write_Error(t *testing.T) {
 
 func stubReader(readerMockResponse []byte) *ReaderMock {
 	readerMock := new(ReaderMock)
-	readerMock.On("Read", testAssemblyFileName).Return(readerMockResponse, nil)
+	readerMock.On("Read", testVmFileName).Return(readerMockResponse, nil)
 	return readerMock
 }
 

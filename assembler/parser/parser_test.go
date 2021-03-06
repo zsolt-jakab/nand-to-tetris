@@ -1,4 +1,4 @@
-package parser_test
+  package parser_test
 
 import (
 	"testing"
@@ -28,7 +28,7 @@ func Test_Translate_A_Instruction_With_Label(t *testing.T) {
 }
 
 func Test_Translate_Invalid_A_Instruction_Panics(t *testing.T) {
-	panicMessage := "Error: [Can not create A instruction with bigger than 32767 address value: [32768]] in code: [@32768] in line: [1]"
+	panicMessage := "Error: [Can not create A instruction with bigger than 32767 address value: [32768] ] in code: [@32768] in line: [1]"
 	lines := []string{"@32768"}
 	lineIndexes := []int{1}
 
@@ -48,7 +48,7 @@ func Test_Translate_C_Instruction(t *testing.T) {
 }
 
 func Test_Translate_Invalid_C_Panics(t *testing.T) {
-	panicMessage := "Error: [Can not create C instruction with unknown computation: [inv-comp]] in code: [M=inv-comp;JGT] in line: [1]"
+	panicMessage := "Error: [Can not create C instruction with unknown computation: [inv-comp] ] in code: [M=inv-comp;JGT] in line: [1]"
 	lines := []string{"M=inv-comp;JGT"}
 	lineIndexes := []int{1}
 
@@ -58,7 +58,7 @@ func Test_Translate_Invalid_C_Panics(t *testing.T) {
 }
 
 func Test_Translate_Unknown_Instruction_Panics(t *testing.T) {
-	panicMessage := "Error: [Can not create C instruction with unknown computation: [Custom Instruction]] in code: [Custom Instruction] in line: [2]"
+	panicMessage := "Error: [Can not create C instruction with unknown computation: [Custom Instruction] ] in code: [Custom Instruction] in line: [2]"
 	lines := []string{"@0", "Custom Instruction"}
 	lineIndexes := []int{1, 2}
 

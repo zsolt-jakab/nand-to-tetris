@@ -30,7 +30,7 @@ func Translate(codeLines []string, codeLineIndexes []int) []string {
 	var binaryLines []string
 	for indx, code := range codeLines {
 		if !isLabel(code) {
-			instruction, err := getInsruction(code, symbolTable)
+			instruction, err := getInstruction(code, symbolTable)
 			if err != nil {
 				panic(fmt.Sprintf("Error: [%v] in code: [%s] in line: [%d]", err, code, codeLineIndexes[indx]))
 			}
@@ -40,7 +40,7 @@ func Translate(codeLines []string, codeLineIndexes []int) []string {
 	return binaryLines
 }
 
-func getInsruction(inst string, symbolTable *SymbolTable) (Instruction, error) {
+func getInstruction(inst string, symbolTable *SymbolTable) (Instruction, error) {
 	if isAInstruction(inst) {
 		return getAInstruction(inst, symbolTable)
 	}

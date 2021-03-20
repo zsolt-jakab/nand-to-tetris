@@ -3,6 +3,7 @@ package parser
 import (
 	"fmt"
 	"github.com/zsolt-jakab/nand-to-tetris/vm-translator/parser/command/arithlog"
+	"github.com/zsolt-jakab/nand-to-tetris/vm-translator/parser/command/branching"
 	"github.com/zsolt-jakab/nand-to-tetris/vm-translator/parser/command/memaccess"
 	"strings"
 )
@@ -28,6 +29,8 @@ func Translate(fileName string, codeLines []string, codeLineIndexes []int) []str
 		comm := strings.Fields(codeLine)
 		if len(comm) == 1 {
 			translatedLineOfCommand, err = arithlog.Translate(comm[0])
+		} else if len(comm) == 2 {
+			translatedLineOfCommand, err = branching.Translate(comm[0], comm[1])
 		} else if len(comm) == 3 {
 			translatedLineOfCommand, err = memaccess.Translate(memaccess.NewBase(comm[0], comm[1], comm[2]), fileName)
 		}

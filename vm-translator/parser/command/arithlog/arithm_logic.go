@@ -27,10 +27,6 @@ var comparisonMap = map[string]func() []string{
 }
 
 func Translate(command string) ([]string, error) {
-	return getTranslation(command)
-}
-
-func getTranslation(command string) ([]string, error) {
 	if translation, isPresent := operationMap[command]; isPresent {
 		return translation, nil
 	} else if translation, isPresent := comparisonMap[command]; isPresent {

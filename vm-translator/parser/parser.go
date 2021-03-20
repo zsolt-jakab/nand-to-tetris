@@ -23,7 +23,6 @@ help in case of some error happens in the translation
 func Translate(fileName string, codeLines []string, codeLineIndexes []int) []string {
 	var translatedFileLines []string
 	var translatedLineOfCommand []string
-	//translatedLineOfCommand := make([]string, 0)
 	for index, codeLine := range codeLines {
 		var err error
 		comm := strings.Fields(codeLine)

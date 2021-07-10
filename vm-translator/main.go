@@ -1,25 +1,24 @@
 package main
 
 import (
-	"os"
-	"path/filepath"
-
 	"github.com/zsolt-jakab/nand-to-tetris/vm-translator/io"
 	"github.com/zsolt-jakab/nand-to-tetris/vm-translator/parser"
+	"os"
 )
 
 func main() {
-	fileName := os.Args[1]
-	doMain(fileName)
+	filePath := os.Args[1]
+	doMain(filePath)
 }
 
-func doMain(fileNameWithPath string) {
+func doMain(filePath string) {
+	fileInfo, _ := os.Stat(filePath)
 	var reader io.FileReader = &io.DefaultFileReader{}
 	var writer io.FileWriter = &io.DefaultFileWriter{}
 	var sourceAccessor io.FileAccessor = &io.VMTranslatorFileAccessor{FileReader: reader, FileWriter: writer}
 
-	codeLines, codeLineIndexes := sourceAccessor.ReadSourceLines(fileNameWithPath)
+	codeLines := sourceAccessor.ReadSourceLines(filePath)
 
-	binaryLines := parser.Translate(filepath.Base(fileNameWithPath), codeLines, codeLineIndexes)
-	sourceAccessor.CreateTargetFile(fileNameWithPath, binaryLines)
+	binaryLines := parser.Translate(codeLines, fileInfo.IsDir())
+	sourceAccessor.CreateTargetFile(filePath, binaryLines)
 }

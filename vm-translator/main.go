@@ -15,7 +15,8 @@ func doMain(filePath string) {
 	fileInfo, _ := os.Stat(filePath)
 	var reader io.FileReader = &io.DefaultFileReader{}
 	var writer io.FileWriter = &io.DefaultFileWriter{}
-	var sourceAccessor io.FileAccessor = &io.VMTranslatorFileAccessor{FileReader: reader, FileWriter: writer}
+	var access io.FileAccess = &io.DefaultFileAccess{}
+	var sourceAccessor io.FileAccessor = &io.VMTranslatorFileAccessor{FileReader: reader, FileWriter: writer, FileAccess: access}
 
 	codeLines := sourceAccessor.ReadSourceLines(filePath)
 

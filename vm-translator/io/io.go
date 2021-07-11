@@ -39,6 +39,7 @@ VMTranslatorFileAccessor is the base implementation of FileAccessor
 type VMTranslatorFileAccessor struct {
 	FileReader
 	FileWriter
+	FileAccess
 }
 
 /*
@@ -48,7 +49,7 @@ It will give back the line numbers in the files in an int array, what will help 
 if a there is an invalid code which can not be translated.
 */
 func (sr *VMTranslatorFileAccessor) ReadSourceLines(filePath string) []CodeLine {
-	fileInfo, _ := os.Stat(filePath)
+	fileInfo, _ := sr.Stat(filePath)
 	var codeLines []CodeLine
 	if fileInfo.IsDir() {
 		var vmFilePaths, err = findPaths(filePath, vmFilePattern)
@@ -77,7 +78,7 @@ CreateTargetFile creates a file with the given lines and .asm extension
 func (sr *VMTranslatorFileAccessor) CreateTargetFile(filePath string, lines []string) {
 	var joinedLines = join(lines)
 	var filePathToWrite string
-	fileInfo, _ := os.Stat(filePath)
+	fileInfo, _ := sr.Stat(filePath)
 	if fileInfo.IsDir() {
 		filePathToWrite = path.Join(filePath, path.Base(filePath)+asmFileExtension)
 	} else {

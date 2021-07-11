@@ -2,11 +2,11 @@ package arithlog
 
 import (
 	"fmt"
-	"strconv"
+	"github.com/zsolt-jakab/nand-to-tetris/vm-translator/parser/command/util"
 	"strings"
 )
 
-var nextId = idSequence()
+var nextId = util.IdSequence()
 
 var operationMap = map[string][]string{
 	//arithmetic commands
@@ -27,10 +27,6 @@ var comparisonMap = map[string]func() []string{
 }
 
 func Translate(command string) ([]string, error) {
-	return getTranslation(command)
-}
-
-func getTranslation(command string) ([]string, error) {
 	if translation, isPresent := operationMap[command]; isPresent {
 		return translation, nil
 	} else if translation, isPresent := comparisonMap[command]; isPresent {
@@ -71,13 +67,5 @@ func comparison(branchJumpCondition string) func() []string {
 			//end of if
 			"(" + strings.ToLower(branchJumpCondition) + "_end" + id + ")",
 		}
-	}
-}
-
-func idSequence() func() string {
-	id := 0
-	return func() string {
-		id++
-		return strconv.Itoa(id)
 	}
 }

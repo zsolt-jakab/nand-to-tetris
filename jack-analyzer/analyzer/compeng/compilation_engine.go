@@ -1,8 +1,9 @@
 package compeng
 
 import (
-	"github.com/zsolt-jakab/nand-to-tetris/jack-analyzer/analyzer"
+	"github.com/zsolt-jakab/nand-to-tetris/jack-analyzer/analyzer/tokenizer"
 	"html"
+	"strconv"
 	"strings"
 )
 
@@ -18,13 +19,25 @@ var Operands = map[uint8]bool{
 	'=': true,
 }
 
+var UnaryOps = map[uint8]bool{
+	'-': true,
+	'~': true,
+}
+
+var KeywordConstants = map[string]bool{
+	"true":  true,
+	"false": true,
+	"null":  true,
+	"this":  true,
+}
+
 type JackCompilationEngine struct {
-	tokenizer        analyzer.Tokenizer
+	tokenizer        tokenizer.Tokenizer
 	doubleSpaceCount int
 	sb               strings.Builder
 }
 
-func NewJackCompilationEngine(tokenizer *analyzer.Tokenizer) *JackCompilationEngine {
+func NewJackCompilationEngine(tokenizer *tokenizer.Tokenizer) *JackCompilationEngine {
 	return &JackCompilationEngine{
 		tokenizer:        *tokenizer,
 		doubleSpaceCount: 0,
@@ -80,7 +93,7 @@ func (jCE *JackCompilationEngine) CompileSubroutineBody() {
 	jCE.writeLine("<symbol> { </symbol>")
 	jCE.tokenizer.Advance()
 
-	for jCE.tokenizer.TokenType() == analyzer.Keyword && jCE.tokenizer.KeyWord() == "var" {
+	for jCE.tokenizer.TokenType() == tokenizer.Keyword && jCE.tokenizer.KeyWord() == "var" {
 		jCE.CompileVarDec()
 	}
 
@@ -121,6 +134,8 @@ func (jCE *JackCompilationEngine) CompileDo() {
 	jCE.writeLine("<keyword> " + jCE.tokenizer.KeyWord() + " </keyword>")
 	jCE.tokenizer.Advance()
 
+	jCE.writeLine("<identifier> " + jCE.tokenizer.Identifier() + " </identifier>")
+	jCE.tokenizer.Advance()
 	jCE.CompileSubroutineCall()
 
 	jCE.writeLine("<symbol> ; </symbol>")
@@ -131,9 +146,7 @@ func (jCE *JackCompilationEngine) CompileDo() {
 }
 
 func (jCE *JackCompilationEngine) CompileSubroutineCall() {
-	jCE.writeLine("<identifier> " + jCE.tokenizer.Identifier() + " </identifier>")
-	jCE.tokenizer.Advance()
-	if jCE.tokenizer.TokenType() == analyzer.Symbol && jCE.tokenizer.Symbol() == '.' {
+	if jCE.tokenizer.TokenType() == tokenizer.Symbol && jCE.tokenizer.Symbol() == '.' {
 		jCE.writeLine("<symbol> . </symbol>")
 		jCE.tokenizer.Advance()
 		jCE.writeLine("<identifier> " + jCE.tokenizer.Identifier() + " </identifier>")
@@ -150,10 +163,10 @@ func (jCE *JackCompilationEngine) compileExpressionList() {
 	jCE.doubleSpaceCount++
 
 	jCE.tokenizer.Advance()
-	if jCE.tokenizer.TokenType() != analyzer.Symbol || jCE.tokenizer.Symbol() != ')' {
+	if jCE.tokenizer.TokenType() != tokenizer.Symbol || jCE.tokenizer.Symbol() != ')' {
 		jCE.CompileExpression()
 	}
-	for jCE.tokenizer.TokenType() == analyzer.Symbol && jCE.tokenizer.Symbol() == ',' {
+	for jCE.tokenizer.TokenType() == tokenizer.Symbol && jCE.tokenizer.Symbol() == ',' {
 		jCE.writeLine("<symbol> , </symbol>")
 		jCE.tokenizer.Advance()
 
@@ -172,7 +185,7 @@ func (jCE *JackCompilationEngine) CompileReturn() {
 	jCE.writeLine("<keyword> " + jCE.tokenizer.KeyWord() + " </keyword>")
 	jCE.tokenizer.Advance()
 
-	if jCE.tokenizer.TokenType() != analyzer.Symbol || jCE.tokenizer.Symbol() != ';' {
+	if jCE.tokenizer.TokenType() != tokenizer.Symbol || jCE.tokenizer.Symbol() != ';' {
 		jCE.CompileExpression()
 	}
 	jCE.writeLine("<symbol> ; </symbol>")
@@ -234,7 +247,7 @@ func (jCE *JackCompilationEngine) CompileIf() {
 
 	jCE.tokenizer.Advance()
 
-	if jCE.tokenizer.TokenType() == analyzer.Keyword && jCE.tokenizer.KeyWord() == "else" {
+	if jCE.tokenizer.TokenType() == tokenizer.Keyword && jCE.tokenizer.KeyWord() == "else" {
 		jCE.writeLine("<keyword> " + jCE.tokenizer.KeyWord() + " </keyword>")
 		jCE.tokenizer.Advance()
 
@@ -258,7 +271,7 @@ func (jCE *JackCompilationEngine) CompileLet() {
 
 	jCE.compileKeywordOrIdentifiers()
 
-	if jCE.tokenizer.TokenType() == analyzer.Symbol && jCE.tokenizer.Symbol() == '[' {
+	if jCE.tokenizer.TokenType() == tokenizer.Symbol && jCE.tokenizer.Symbol() == '[' {
 		jCE.writeLine("<symbol> [ </symbol>")
 		jCE.tokenizer.Advance()
 
@@ -283,7 +296,7 @@ func (jCE *JackCompilationEngine) CompileExpression() {
 	jCE.doubleSpaceCount++
 	jCE.CompileTerm()
 
-	for jCE.tokenizer.TokenType() == analyzer.Symbol && Operands[jCE.tokenizer.Symbol()] {
+	for jCE.tokenizer.TokenType() == tokenizer.Symbol && Operands[jCE.tokenizer.Symbol()] {
 		jCE.writeLine("<symbol> " + html.EscapeString(string(jCE.tokenizer.Symbol())) + " </symbol>")
 		jCE.tokenizer.Advance()
 		jCE.CompileTerm()
@@ -297,19 +310,55 @@ func (jCE *JackCompilationEngine) CompileTerm() {
 	jCE.writeLine("<term>")
 	jCE.doubleSpaceCount++
 
-	if jCE.tokenizer.TokenType() == analyzer.Keyword {
+	if jCE.tokenizer.TokenType() == tokenizer.IntConst {
+		jCE.writeLine("<integerConstant> " + strconv.Itoa(jCE.tokenizer.IntVal()) + " </integerConstant>")
+		jCE.tokenizer.Advance()
+
+	} else if jCE.tokenizer.TokenType() == tokenizer.StringConst {
+		jCE.writeLine("<stringConstant> " + jCE.tokenizer.StringVal() + " </stringConstant>")
+		jCE.tokenizer.Advance()
+
+	} else if jCE.tokenizer.TokenType() == tokenizer.Keyword && KeywordConstants[jCE.tokenizer.KeyWord()] {
 		jCE.writeLine("<keyword> " + jCE.tokenizer.KeyWord() + " </keyword>")
-	} else {
+		jCE.tokenizer.Advance()
+
+	} else if jCE.tokenizer.TokenType() == tokenizer.Identifier {
 		jCE.writeLine("<identifier> " + jCE.tokenizer.Identifier() + " </identifier>")
+		jCE.tokenizer.Advance()
+
+		if jCE.tokenizer.TokenType() == tokenizer.Symbol {
+			if jCE.tokenizer.Symbol() == '[' {
+				jCE.writeLine("<symbol> [ </symbol>")
+				jCE.tokenizer.Advance()
+
+				jCE.CompileExpression()
+
+				jCE.writeLine("<symbol> ] </symbol>")
+				jCE.tokenizer.Advance()
+			} else if jCE.tokenizer.Symbol() == '.' || jCE.tokenizer.Symbol() == '(' {
+				jCE.CompileSubroutineCall()
+			}
+		}
+	} else if jCE.tokenizer.TokenType() == tokenizer.Symbol && jCE.tokenizer.Symbol() == '(' {
+		jCE.writeLine("<symbol> ( </symbol>")
+		jCE.tokenizer.Advance()
+
+		jCE.CompileExpression()
+
+		jCE.writeLine("<symbol> ) </symbol>")
+		jCE.tokenizer.Advance()
+	} else if jCE.tokenizer.TokenType() == tokenizer.Symbol && UnaryOps[jCE.tokenizer.Symbol()] {
+		jCE.writeLine("<symbol> " + string(jCE.tokenizer.Symbol()) + " </symbol>")
+		jCE.tokenizer.Advance()
+		jCE.CompileTerm()
 	}
-	jCE.tokenizer.Advance()
 
 	jCE.doubleSpaceCount--
 	jCE.writeLine("</term>")
 }
 
 func (jCE *JackCompilationEngine) isStatement() bool {
-	return jCE.tokenizer.TokenType() == analyzer.Keyword && (jCE.tokenizer.KeyWord() == "let" ||
+	return jCE.tokenizer.TokenType() == tokenizer.Keyword && (jCE.tokenizer.KeyWord() == "let" ||
 		jCE.tokenizer.KeyWord() == "if" ||
 		jCE.tokenizer.KeyWord() == "while" ||
 		jCE.tokenizer.KeyWord() == "do" ||
@@ -322,7 +371,7 @@ func (jCE *JackCompilationEngine) CompileVarDec() {
 
 	jCE.compileKeywordOrIdentifiers()
 
-	for jCE.tokenizer.TokenType() == analyzer.Symbol && jCE.tokenizer.Symbol() == ',' {
+	for jCE.tokenizer.TokenType() == tokenizer.Symbol && jCE.tokenizer.Symbol() == ',' {
 		jCE.writeLine("<symbol> , </symbol>")
 		jCE.tokenizer.Advance()
 		jCE.compileKeywordOrIdentifiers()
@@ -339,7 +388,7 @@ func (jCE *JackCompilationEngine) CompileParameterList() {
 	jCE.doubleSpaceCount++
 
 	jCE.compileKeywordOrIdentifiers()
-	for jCE.tokenizer.TokenType() == analyzer.Symbol && jCE.tokenizer.Symbol() == ',' {
+	for jCE.tokenizer.TokenType() == tokenizer.Symbol && jCE.tokenizer.Symbol() == ',' {
 		jCE.writeLine("<symbol> , </symbol>")
 		jCE.tokenizer.Advance()
 		jCE.compileKeywordOrIdentifiers()
@@ -350,8 +399,8 @@ func (jCE *JackCompilationEngine) CompileParameterList() {
 }
 
 func (jCE *JackCompilationEngine) compileKeywordOrIdentifiers() {
-	for jCE.tokenizer.TokenType() == analyzer.Keyword || jCE.tokenizer.TokenType() == analyzer.Identifier {
-		if jCE.tokenizer.TokenType() == analyzer.Keyword {
+	for jCE.tokenizer.TokenType() == tokenizer.Keyword || jCE.tokenizer.TokenType() == tokenizer.Identifier {
+		if jCE.tokenizer.TokenType() == tokenizer.Keyword {
 			jCE.writeLine("<keyword> " + jCE.tokenizer.KeyWord() + " </keyword>")
 		} else {
 			jCE.writeLine("<identifier> " + jCE.tokenizer.Identifier() + " </identifier>")
@@ -361,7 +410,7 @@ func (jCE *JackCompilationEngine) compileKeywordOrIdentifiers() {
 }
 
 func (jCE *JackCompilationEngine) isSubroutineDec() bool {
-	return jCE.tokenizer.TokenType() == analyzer.Keyword &&
+	return jCE.tokenizer.TokenType() == tokenizer.Keyword &&
 		(jCE.tokenizer.KeyWord() == "constructor" ||
 			jCE.tokenizer.KeyWord() == "function" ||
 			jCE.tokenizer.KeyWord() == "method")
@@ -373,7 +422,7 @@ func (jCE *JackCompilationEngine) CompileClassVarDec() {
 
 	jCE.compileKeywordOrIdentifiers()
 
-	for jCE.tokenizer.TokenType() == analyzer.Symbol && jCE.tokenizer.Symbol() == ',' {
+	for jCE.tokenizer.TokenType() == tokenizer.Symbol && jCE.tokenizer.Symbol() == ',' {
 		jCE.writeLine("<symbol> , </symbol>")
 		jCE.tokenizer.Advance()
 		jCE.compileKeywordOrIdentifiers()
@@ -386,7 +435,7 @@ func (jCE *JackCompilationEngine) CompileClassVarDec() {
 }
 
 func (jCE *JackCompilationEngine) isClassVar() bool {
-	return jCE.tokenizer.TokenType() == analyzer.Keyword && jCE.tokenizer.KeyWord() == "static" || jCE.tokenizer.KeyWord() == "field"
+	return jCE.tokenizer.TokenType() == tokenizer.Keyword && jCE.tokenizer.KeyWord() == "static" || jCE.tokenizer.KeyWord() == "field"
 }
 
 func (jCE *JackCompilationEngine) writeLine(line string) (int, error) {

@@ -2,7 +2,6 @@ package tokenizer
 
 import (
 	"github.com/stretchr/testify/assert"
-	"github.com/zsolt-jakab/nand-to-tetris/jack-analyzer/analyzer"
 	hio "github.com/zsolt-jakab/nand-to-tetris/jack-analyzer/io"
 	"html"
 	"io/ioutil"
@@ -16,7 +15,7 @@ var fileAccessor hio.FileAccessor = &hio.DefaultFileAccessor{FileReader: &hio.De
 func Test_Tokenizer_Array(t *testing.T) {
 	var sourceCode = fileAccessor.ReadCode("testdata/array/Main.jack")
 	var expected = getFileContentAsString("testdata/array/MainT.xml")
-	var tokenizer analyzer.Tokenizer = NewJackTokenizer(sourceCode)
+	var tokenizer Tokenizer = NewJackTokenizer(sourceCode)
 
 	actual := tokenize(tokenizer)
 
@@ -26,7 +25,7 @@ func Test_Tokenizer_Array(t *testing.T) {
 func Test_Tokenizer_Square_Main(t *testing.T) {
 	var sourceCode = fileAccessor.ReadCode("testdata/square/Main.jack")
 	var expected = getFileContentAsString("testdata/square/MainT.xml")
-	var tokenizer analyzer.Tokenizer = NewJackTokenizer(sourceCode)
+	var tokenizer Tokenizer = NewJackTokenizer(sourceCode)
 
 	actual := tokenize(tokenizer)
 
@@ -36,7 +35,7 @@ func Test_Tokenizer_Square_Main(t *testing.T) {
 func Test_Tokenizer_Square(t *testing.T) {
 	var sourceCode = fileAccessor.ReadCode("testdata/square/Square.jack")
 	var expected = getFileContentAsString("testdata/square/SquareT.xml")
-	var tokenizer analyzer.Tokenizer = NewJackTokenizer(sourceCode)
+	var tokenizer Tokenizer = NewJackTokenizer(sourceCode)
 
 	actual := tokenize(tokenizer)
 
@@ -46,7 +45,7 @@ func Test_Tokenizer_Square(t *testing.T) {
 func Test_Tokenizer_Square_Game(t *testing.T) {
 	var sourceCode = fileAccessor.ReadCode("testdata/square/SquareGame.jack")
 	var expected = getFileContentAsString("testdata/square/SquareGameT.xml")
-	var tokenizer analyzer.Tokenizer = NewJackTokenizer(sourceCode)
+	var tokenizer Tokenizer = NewJackTokenizer(sourceCode)
 
 	actual := tokenize(tokenizer)
 
@@ -54,7 +53,7 @@ func Test_Tokenizer_Square_Game(t *testing.T) {
 }
 
 
-func tokenize(tokenizer analyzer.Tokenizer) string {
+func tokenize(tokenizer Tokenizer) string {
 	var sb strings.Builder
 	sb.WriteString("<tokens>")
 	sb.WriteString("\r\n")
@@ -72,17 +71,17 @@ func tokenize(tokenizer analyzer.Tokenizer) string {
 	return actual
 }
 
-func getTokenValue(tokenizer analyzer.Tokenizer) string {
+func getTokenValue(tokenizer Tokenizer) string {
 	switch tokenizer.TokenType() {
-	case analyzer.Symbol:
+	case Symbol:
 		return html.EscapeString(string(tokenizer.Symbol()))
-	case analyzer.Keyword:
+	case Keyword:
 		return tokenizer.KeyWord()
-	case analyzer.Identifier:
+	case Identifier:
 		return tokenizer.Identifier()
-	case analyzer.IntConst:
+	case IntConst:
 		return strconv.Itoa(tokenizer.IntVal())
-	case analyzer.StringConst:
+	case StringConst:
 		return tokenizer.StringVal()
 	default:
 		return "Unknown"

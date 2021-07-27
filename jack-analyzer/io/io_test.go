@@ -104,13 +104,30 @@ func Test_ReadCodeLines_Panic_When_Read_Error(t *testing.T) {
 	assert.PanicsWithError(t, "Error message ", action)
 }
 
+func Test_FindPath_With_File(t *testing.T) {
+	sut := hio.DefaultFileAccessor{FileReader: &hio.DefaultFileReader{}, FileWriter: &hio.DefaultFileWriter{}}
+
+	actualFiles, err := sut.FindPaths("testdata/asm/simple/expected.txt", "*.txt")
+
+	fmt.Println(err)
+	assert.Equal(t, []string{"testdata/asm/simple/expected.txt"}, actualFiles)
+}
+
+func Test_FindPath_With_Directory(t *testing.T) {
+	sut := hio.DefaultFileAccessor{FileReader: &hio.DefaultFileReader{}, FileWriter: &hio.DefaultFileWriter{}}
+
+	actualFiles, _ := sut.FindPaths("testdata/asm/simple", "*.txt")
+
+	assert.Equal(t, []string{"testdata/asm/simple/expected.txt", "testdata/asm/simple/mock_response.txt"}, actualFiles)
+}
+
 func Test_CreateFile(t *testing.T) {
 	writerMock := new(WriterMock)
 	writerMock.On("Write", testHackFileName, []byte("line 1\nline 2\nline 3\n")).Return(nil)
 	linesToSave := []string{"line 1", "line 2", "line 3"}
 	sut := hio.DefaultFileAccessor{&hio.DefaultFileReader{}, writerMock}
 
-	sut.CreateFile(testHackFileName, linesToSave)
+	sut.CreateFileFromLines(testHackFileName, linesToSave)
 
 	writerMock.AssertExpectations(t)
 }
@@ -121,7 +138,7 @@ func Test_CreateFile_Panic_When_Write_Error(t *testing.T) {
 	linesToSave := []string{"line 1", "line 2", "line 3"}
 	sut := hio.DefaultFileAccessor{&hio.DefaultFileReader{}, writerMock}
 
-	action := func() { sut.CreateFile(testHackFileName, linesToSave) }
+	action := func() { sut.CreateFileFromLines(testHackFileName, linesToSave) }
 
 	assert.PanicsWithError(t, "Error message", action)
 	writerMock.AssertExpectations(t)

@@ -1,7 +1,6 @@
 package tokenizer
 
 import (
-	"github.com/zsolt-jakab/nand-to-tetris/jack-analyzer/analyzer"
 	"strconv"
 	"unicode"
 )
@@ -12,7 +11,7 @@ type JackTokenizer struct {
 	sourceCode       string
 	currentCharIndex int
 
-	tokenType  analyzer.TokenType
+	tokenType  TokenType
 	keyWord    string
 	symbol     uint8
 	identifier string
@@ -24,7 +23,7 @@ func NewJackTokenizer(sourceCode string) *JackTokenizer {
 	return &JackTokenizer{
 		sourceCode:       sourceCode,
 		currentCharIndex: 0,
-		tokenType:        analyzer.UnknownToken,
+		tokenType:        UnknownToken,
 	}
 }
 
@@ -68,17 +67,17 @@ func (jT *JackTokenizer) Advance() {
 func (jT *JackTokenizer) advanceIdentifierOrKeyword() {
 	startOfNexToken := jT.getEndOfWord() + 1
 	currentWord := jT.sourceCode[jT.currentCharIndex:startOfNexToken]
-	if analyzer.Keywords[currentWord] {
-		jT.tokenType = analyzer.Keyword
+	if Keywords[currentWord] {
+		jT.tokenType = Keyword
 		jT.keyWord = currentWord
 	} else {
-		jT.tokenType = analyzer.Identifier
+		jT.tokenType = Identifier
 		jT.identifier = currentWord
 	}
 	jT.currentCharIndex = startOfNexToken
 }
 
-func (jT *JackTokenizer) TokenType() analyzer.TokenType {
+func (jT *JackTokenizer) TokenType() TokenType {
 	return jT.tokenType
 }
 
@@ -95,7 +94,7 @@ func (jT *JackTokenizer) isCurrentIntConstant() bool {
 }
 
 func (jT *JackTokenizer) advanceSymbol() {
-	jT.tokenType = analyzer.Symbol
+	jT.tokenType = Symbol
 	jT.symbol = jT.getCurrentChar()
 	jT.currentCharIndex++
 }
@@ -103,7 +102,7 @@ func (jT *JackTokenizer) advanceSymbol() {
 func (jT *JackTokenizer) isCurrentSymbol() bool {
 	var currentChar = jT.getCurrentChar()
 
-	return analyzer.Symbols[currentChar]
+	return Symbols[currentChar]
 }
 
 func (jT *JackTokenizer) getCurrentChar() uint8 {
@@ -111,7 +110,7 @@ func (jT *JackTokenizer) getCurrentChar() uint8 {
 }
 
 func (jT *JackTokenizer) advanceStringConstant() {
-	jT.tokenType = analyzer.StringConst
+	jT.tokenType = StringConst
 	endQuoteIndex := jT.getEndQuoteIndex()
 	jT.stringVal = jT.sourceCode[jT.currentCharIndex+1 : endQuoteIndex]
 
@@ -119,7 +118,7 @@ func (jT *JackTokenizer) advanceStringConstant() {
 }
 
 func (jT *JackTokenizer) advanceIntConstant() {
-	jT.tokenType = analyzer.IntConst
+	jT.tokenType = IntConst
 	startOfNextToken := jT.getEndOfInt() + 1
 
 	jT.intVal, _ = strconv.Atoi(jT.sourceCode[jT.currentCharIndex:startOfNextToken])

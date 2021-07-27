@@ -1,12 +1,14 @@
 package io
 
 import (
+	"os"
+	"path/filepath"
 	"regexp"
 	"strings"
 )
 
 const (
-	newLine = "\n"
+	newLine     = "\n"
 	emptyString = ""
 )
 
@@ -16,7 +18,9 @@ FileAccessor is an interface for reading code lines of source file and creating 
 type FileAccessor interface {
 	ReadCodeAsLines(name string) ([]string, []int)
 	ReadCode(name string) string
-	CreateFile(name string, lines []string)
+	CreateFileFromLines(name string, lines []string)
+	CreateFileFromContent(name string, content string)
+	FindPaths(root, pattern string) ([]string, error)
 }
 
 /*
@@ -55,13 +59,44 @@ func (sr *DefaultFileAccessor) ReadCode(name string) string {
 }
 
 /*
-CreateFile creates a file with the given name and extension and lines as content
+CreateFileFromLines creates a file with the given name and extension and lines as content
 */
-func (sr *DefaultFileAccessor) CreateFile(name string, lines []string) {
+func (sr *DefaultFileAccessor) CreateFileFromLines(name string, lines []string) {
 	joinedLines := join(lines)
 	err := sr.Write(name, []byte(joinedLines))
 
 	panicIfError(err)
+}
+
+/*
+CreateFileFromContent creates a file with the given name and extension with content
+*/
+func (sr *DefaultFileAccessor) CreateFileFromContent(name string, content string) {
+	err := sr.Write(name, []byte(content))
+
+	panicIfError(err)
+}
+
+/*
+FindPaths returns all file paths from the given root path, if it is a file path, it will return it as a slice
+*/
+func (sr *DefaultFileAccessor) FindPaths(root, pattern string) ([]string, error) {
+	var filePaths []string
+	err := filepath.Walk(root, func(path string, info os.FileInfo, err error) error {
+		if err != nil {
+			return err
+		}
+		if matched, err := filepath.Match(pattern, filepath.Base(path)); err != nil {
+			return err
+		} else if matched {
+			filePaths = append(filePaths, path)
+		}
+		return nil
+	})
+	if err != nil {
+		return nil, err
+	}
+	return filePaths, nil
 }
 
 func scanRawLines(lines []string) ([]string, []int) {

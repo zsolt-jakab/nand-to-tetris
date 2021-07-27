@@ -1,4 +1,4 @@
-package analyzer
+package tokenizer
 
 var Symbols = map[uint8]bool{
 	'{': true,

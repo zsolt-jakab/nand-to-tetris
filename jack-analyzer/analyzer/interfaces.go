@@ -12,20 +12,20 @@ type Tokenizer interface {
 }
 
 type CompilationEngine interface {
-	CompileClass() error
-	CompileClassVarDec() error
-	CompileSubroutineDec() error
-	CompileParameterList() error
-	CompileSubroutineBody() error
-	CompileVarDec() error
-	CompileStatements() error
+	CompileClass() string
+	CompileClassVarDec()
+	CompileSubroutineDec()
+	CompileParameterList()
+	CompileSubroutineBody()
+	CompileVarDec()
+	CompileStatements()
 
-	CompileLet() error
-	CompileIf() error
-	CompileWhile() error
-	CompileDo() error
-	CompileReturn() error
+	CompileLet()
+	CompileIf()
+	CompileWhile()
+	CompileDo()
+	CompileReturn()
 
-	CompileExpression() error
-	CompileTerm() error
+	CompileExpression()
+	CompileTerm()
 }

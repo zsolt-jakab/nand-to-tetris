@@ -1,11 +1,13 @@
 package io
 
 import (
+	"regexp"
 	"strings"
 )
 
 const (
 	newLine = "\n"
+	emptyString = ""
 )
 
 /*
@@ -34,7 +36,8 @@ if a there is an invalid code which can not be translated to binary.
 func (sr *DefaultFileAccessor) ReadCodeAsLines(name string) ([]string, []int) {
 	bytes, err := sr.Read(name)
 	panicIfError(err)
-	lines := strings.Split(string(bytes), newLine)
+	codeSrc := stripComments(string(bytes))
+	lines := strings.Split(codeSrc, newLine)
 
 	return scanRawLines(lines)
 }
@@ -78,12 +81,13 @@ func scanRawLines(lines []string) ([]string, []int) {
 }
 
 func getInstructionPart(line string) string {
-	instructionPart := stripComment(line)
-	return strings.TrimSpace(instructionPart)
+	return strings.TrimSpace(line)
 }
 
-func stripComment(line string) string {
-	return strings.Split(line, startOfComment)[0]
+func stripComments(src string) string {
+	multiLineComments := regexp.MustCompile("(?s)/\\*.*?\\*/")
+	singleLineComments := regexp.MustCompile("//.*")
+	return singleLineComments.ReplaceAllString(multiLineComments.ReplaceAllString(src, emptyString), emptyString)
 }
 
 func join(lines []string) string {
